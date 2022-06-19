@@ -243,6 +243,7 @@
 
                     return "<strong>ID:</strong> <span >" + d.id + "</span>" +
                         "<br><strong>Age:</strong> <span >" + d.age + "</span>" +
+                        "<br><strong>Gender:</strong> <span >" + d.gender + "</span>" +
                         "<br><strong>Nationality:</strong> <span >" + d.nationality + "</span>" +
                         "<br><strong>Occupation:</strong> <span >" + d.occupation + "</span>" +
                         "<br><strong>Organization:</strong> <span >" + d.organization + "</span>" +
@@ -288,8 +289,8 @@
                     .enter().append("svg:marker") // This section adds in the arrows
                     .attr("id", String)
                     .attr("viewBox", "0 -10 10 20")
-                    .attr("refX", 30)
-                    .attr("refY", -1.5)
+                    .attr("refX", 29)
+                    .attr("refY", -2.5)
                     .attr("markerWidth", 20)
                     .attr("markerHeight", 20)
                     .attr("orient", "auto")
@@ -364,8 +365,6 @@
                     .force("y", d3.forceY().strength(0.5).y(height - margin.top / 2))
                     .force("link", d3.forceLink(data[0])
                         .id(d => d.id)
-                        .distance(100)
-                        .strength(0.5)
                     )
                     .force("charge", d3.forceManyBody().strength(-200))
                     .force("center", d3.forceCenter(width / 2, height / 2))
