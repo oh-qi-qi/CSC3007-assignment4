@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0" />
+
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet" type="text/css">
+
+    <!-- JQuery DataTable Css -->
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/dataTables.bootstrap.css" rel="stylesheet">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <!-- BootStrap JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <script src="https://unpkg.com/d3-v6-tip@1.0.6/build/d3-v6-tip.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bumbeishvili/d3-tip-for-v6@4/d3-tip.min.css">
+
+
+    <title>SG Covid Cases Cluster</title>
+    <style>
+        nav {
+            background: #026AA6;
+        }
+
+        body {
+            background: #eaeaea;
+        }
+
+        .card .body {
+            padding-left: 20px;
+            padding-top: 10px;
+        }
+
+        .graph-card {
+            margin-top: 20px;
+            margin-bottom: 0px;
+        }
+
+        .dropdown-content li>span {
+            color: #026AA6;
+        }
+
+        .select-wrapper input.select-dropdown:hover {
+            border-bottom: 1px solid #026AA6;
+        }
+
+        .select-wrapper input.select-dropdown:focus {
+            border-bottom: 1px solid #026AA6;
+        }
+
+        .container-body {
+            margin: auto;
+            width: 90%;
+            padding: 10px;
+        }
+
+        .container-footer {
+            margin: auto;
+            width: 90%;
+            padding-left: 10px;
+            padding-top: 10px;
+            padding-bottom: 15px;
+        }
+
+        .page-footer {
+            background: #026AA6;
+        }
+
+        div#my_dataviz {
+            overflow: auto;
+        }
+
+        .d3-tip {
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.4;
+            padding: 20px;
+            pointer-events: none !important;
+            color: #203d5d;
+            box-shadow: 0 4px 20px 4px rgba(0, 20, 60, .1), 0 4px 80px -8px rgba(0, 20, 60, .2);
+            background-color: #fff;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
+        /* Creates a small triangle extender for the tooltip */
+        .d3-tip:after {
+            box-sizing: border-box;
+            display: inline;
+            font-size: 10px;
+            width: 100%;
+            line-height: 1;
+            color: #fff;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        /* Northward tooltips */
+        .d3-tip.n:after {
+            content: "▼";
+            margin: -1px 0 0 0;
+            top: 100%;
+            left: 0;
+            text-align: center;
+        }
+
+        /* Eastward tooltips */
+        .d3-tip.e:after {
+            content: "◀";
+            margin: -4px 0 0 0;
+            top: 50%;
+            left: -8px;
+        }
+
+        /* Southward tooltips */
+        .d3-tip.s:after {
+            content: "▲";
+            margin: 0 0 1px 0;
+            top: -8px;
+            left: 0;
+            text-align: center;
+        }
+
+        /* Westward tooltips */
+        .d3-tip.w:after {
+            content: "▶";
+            margin: -4px 0 0 -1px;
+            top: 50%;
+            left: 100%;
+        }
+
+        .bar-title {
+            font-family: 'Ubuntu';
+        }
+
+        #heading {
+            margin-bottom: -10px;
+        }
+
+        #my_dataviz {
+            margin-bottom: 20px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <nav role="navigation">
+    </nav>
+    <div class="container-body">
+        <!-- Start of main body -->
+        <div class="row clearfix">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div id="graph-body" class="card graph-card col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="header">
+                        <h2 id="heading">SG Covid Cases Classes</h2>
+                    </div>
+
+                    <div class="body">
+                        <div class="input-field col l2 m3 s12">
+                            <!-- Initialize a select button -->
+                            <select id="selectButton"></select>
+                        </div>
+
+                        <!-- Create a div where the graph will take place -->
+                        <div id="my_dataviz" class="col l12 m12 s12"></div>
+                        <div id="tooltip"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End of mainbody -->
+
+    </div>
+
+    <footer class="page-footer">
+        <div class="container-footer">
+
+            Made by <a class="grey-text text-lighten-1" href="https://oh-qi-qi.github.io/CSC3007-assignment4/">Oh Qi Qi</a>
+        </div>
+    </footer>
+    <script>
+        $(document).ready(function() {
+
+            var margin = {
+                    top: 20,
+                    right: 10,
+                    bottom: 40,
+                    left: 100
+                },
+                width = 800
+            height = 400;
+
+            let svg = d3.select("#my_dataviz")
+                .append("svg")
+                .attr("viewBox", "0 0 " + width + " " + height);
+
+            // Load external data
+            Promise.all([d3.json("links-sample.json"), d3.json("cases-sample.json")]).then(data => {
+
+                // Data preprocessing
+                data[0].forEach(e => {
+                    e.source = e.infector;
+                    e.target = e.infectee;
+                });
+
+                console.log(data[0]); //links
+                console.log(data[1]); //cases
+
+                let colorScaleGender = d3.scaleOrdinal().domain(["male", "female"]).range(["steelblue", "pink"]);
+                let colorScaleVaccinated = d3.scaleOrdinal().domain(["yes (2 doses)", "partial (1 dose)", "no"]).range(["#7ABD7E", "#FFB54C", "#FB6962"]);
+
+                d3.select("#selectButton")
+                    .selectAll('myOptions')
+                    .data(["Gender", "Vaccinated"])
+                    .enter()
+                    .append('option')
+                    .text(function(d) {
+                        return d;
+                    }) // text showed in the menu
+                    .attr("value", function(d) {
+                        return d;
+                    }) // corresponding value returned by the button
+
+                $('select').formSelect();
+
+                /* Initialize tooltip */
+                var tip = d3.tip().attr('class', 'd3-tip').html(function(EVENT, d) {
+                    result = data[1].find(s => s.id == d.source);
+
+                    return "<strong>ID:</strong> <span >" + d.id + "</span>" +
+                        "<br><strong>Age:</strong> <span >" + d.age + "</span>" +
+                        "<br><strong>Nationality:</strong> <span >" + d.nationality + "</span>" +
+                        "<br><strong>Occupation:</strong> <span >" + d.occupation + "</span>" +
+                        "<br><strong>Organization:</strong> <span >" + d.organization + "</span>" +
+                        "<br><strong>Serology:</strong> <span >" + d.serology + "</span>" +
+                        "<br><strong>Vaccinated:</strong> <span >" + d.vaccinated + "</span>";
+                });
+                svg.call(tip);
+
+                let mouseOver = function(d) {
+
+                    d3.selectAll(".nodes")
+                        .transition()
+                        .duration(200)
+                        .style("opacity", .4)
+
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .style("opacity", 1)
+                        .style("stroke", "black")
+                        .attr("stroke-width", 3);
+                }
+
+                let mouseLeave = function(d) {
+
+                    d3.selectAll(".nodes")
+                        .transition()
+                        .duration(200).style("stroke", "black")
+                        .style("opacity", 1.0)
+                        .attr("stroke-width", 0);
+
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .style("stroke", "black")
+                        .style("opacity", 1.0)
+                        .attr("stroke-width", 0);
+                }
+
+                // build the arrow.
+                svg.append("svg:defs").selectAll("marker")
+                    .data(["end"]) // Different link/path types can be defined here
+                    .enter().append("svg:marker") // This section adds in the arrows
+                    .attr("id", String)
+                    .attr("viewBox", "0 -10 10 20")
+                    .attr("refX", 30)
+                    .attr("refY", -1.5)
+                    .attr("markerWidth", 20)
+                    .attr("markerHeight", 20)
+                    .attr("orient", "auto")
+                    .append("svg:path")
+                    .attr("d", "M0,-5L10,0L0,5")
+                    .style('stroke', 'none');;
+
+                let linkpath = svg.append("g")
+                    .attr("id", "links")
+                    .selectAll("path")
+                    .data(data[0])
+                    .enter()
+                    .append("path")
+                    .attr("fill", "none")
+                    .attr("stroke", "#666")
+                    .attr("marker-end", "url(#end)")
+                    .attr("stroke-width", "1px");
+
+                var node = svg.append("g")
+                    .attr("id", "nodes")
+                    .selectAll("g")
+                    .data(data[1])
+                    .enter()
+                    .append("g")
+
+                var circles = node.append("circle")
+                    .attr("r", 20)
+                    .style("fill", d => colorScaleGender(d.gender))
+                    .attr("class", function(d) {
+                        return "nodes"
+                    })
+                    .on("mouseover", function(event, d) {
+                        tip.show(event, d);
+                        mouseOver.call(this);
+                    })
+                    .on("mouseleave", function(event, d) {
+
+                        mouseLeave.call(this);
+                        tip.hide(event, d)
+                    });;
+
+                // Create a drag handler and append it to the node object instead
+                var drag_handler = d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended);
+
+                drag_handler(node);
+
+
+                var labels = node.append('text')
+                    .attr('text-anchor', 'middle')
+                    .attr('dominant-baseline', 'central')
+                    .attr('font-family', 'FontAwesome')
+                    .attr('font-size', '20px')
+                    .style("stroke", "black")
+                    .style("stroke-width", "0")
+                    .style("opacity", 1.0)
+                    .text(function(d) {
+                        if (d.gender == "female") {
+                            return "\uf182"
+                        } else {
+                            return "\uf183"
+                        }
+                    })
+
+                var simulation = d3.forceSimulation();
+
+                simulation
+                    .nodes(data[1])
+                    .force("x", d3.forceX().strength(0.5).x(width - margin.right / 2))
+                    .force("y", d3.forceY().strength(0.5).y(height - margin.top / 2))
+                    .force("link", d3.forceLink(data[0])
+                        .id(d => d.id)
+                        .distance(100)
+                        .strength(0.5)
+                    )
+                    .force("charge", d3.forceManyBody().strength(-200))
+                    .force("center", d3.forceCenter(width / 2, height / 2))
+                    .force("collide", d3.forceCollide().strength(0.2).radius(40))
+                    .on("tick", d => {
+                        node
+                            .attr("transform", function(d) {
+                                return "translate(" + d.x + "," + d.y + ")";
+                            })
+
+                        linkpath
+                            .attr("d", d => {
+                                var dx = d.target.x - d.source.x,
+                                    dy = d.target.y - d.source.y,
+                                    dr = Math.sqrt(dx * dx + dy * dy);
+                                return "M" + d.source.x + "," + d.source.y + "A" +
+                                    dr + "," + dr + " 0 0,1 " + " " + d.target.x + "," + d.target.y
+                            });
+                    });
+
+                function dragstarted(event, d) {
+                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                    d.fx = d.x;
+                    d.fy = d.y;
+
+                    console.log(d);
+                }
+
+                function dragged(event, d) {
+                    d.fx = event.x;
+                    d.fy = event.y;
+                }
+
+                function dragended(event, d) {
+                    if (!event.active) simulation.alphaTarget(0);
+                    d.fx = null;
+                    d.fy = null;
+                }
+
+                // A function that update the chart
+                function update(propertyType) {
+
+                    // check property type
+                    console.log(propertyType)
+
+                    if (propertyType == "Gender") {
+                        circles.style("fill", d => colorScaleGender(d.gender));
+                        labels.text(function(d) {
+                            if (d.gender == "female") {
+                                return "\uf182"
+                            } else {
+                                return "\uf183"
+                            }
+                        })
+                    } else if (propertyType == "Vaccinated") {
+                        circles.style("fill", d => colorScaleVaccinated(d.vaccinated))
+                        labels.text(function(d) {
+                            return "\uf48e"
+
+                        })
+                    }
+
+                }
+
+                // When the button is changed, run the updateChart function
+                d3.select("#selectButton").on("change", function(event, d) {
+                    // recover the option that has been chosen
+                    const selectedOption = d3.select(this).property("value")
+                    // run the updateChart function with this selected option
+                    update(selectedOption)
+                })
+
+                //end of data
+            })
+        });
+
+    </script>
+    <script>
+
+
+    </script>
+
+
+</body>
+
+</html>
