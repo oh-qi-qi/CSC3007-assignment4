@@ -195,10 +195,10 @@
         $(document).ready(function() {
 
             var margin = {
-                    top: 20,
-                    right: 10,
-                    bottom: 40,
-                    left: 100
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    left: 0
                 },
                 width = 800
             height = 400;
@@ -209,7 +209,6 @@
 
             // Load external data
             Promise.all([d3.json("links-sample.json"), d3.json("cases-sample.json")]).then(data => {
-
                 // Data preprocessing
                 data[0].forEach(e => {
                     e.source = e.infector;
@@ -375,14 +374,14 @@
 
                 simulation
                     .nodes(data[1])
-                    .force("x", d3.forceX().strength(0.5).x(width - margin.right / 2))
-                    .force("y", d3.forceY().strength(0.5).y(height - margin.top / 2))
+                    .force("x", d3.forceX().strength(0.04).x(width - margin.right / 2))
+                    .force("y", d3.forceY().strength(0.04).y(height - margin.top / 2))
                     .force("link", d3.forceLink(data[0])
                         .id(d => d.id)
                     )
-                    .force("charge", d3.forceManyBody().strength(-200))
+                    .force("charge", d3.forceManyBody().strength(-100))
                     .force("center", d3.forceCenter(width / 2, height / 2))
-                    .force("collide", d3.forceCollide().strength(0.2).radius(40))
+                    .force("collide", d3.forceCollide().strength(0.3).radius(40))
                     .on("tick", d => {
                         node
                             .attr("transform", function(d) {
