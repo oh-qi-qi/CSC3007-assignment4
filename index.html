@@ -15,7 +15,6 @@
     <!-- JQuery DataTable Css -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/bootstrap.css" rel="stylesheet">
-    <link href="css/dataTables.bootstrap.css" rel="stylesheet">
 
     <!-- Compiled and minified JavaScript -->
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -220,7 +219,7 @@
                 console.log(data[0]); //links
                 console.log(data[1]); //cases
 
-                let colorScaleGender = d3.scaleOrdinal().domain(["male", "female"]).range(["steelblue", "pink"]);
+                let colorScaleGender = d3.scaleOrdinal().domain(["male", "female"]).range(["#86CBED", "#FFB8C7"]);
                 let colorScaleVaccinated = d3.scaleOrdinal().domain(["yes (2 doses)", "partial (1 dose)", "no"]).range(["#7ABD7E", "#FFB54C", "#FB6962"]);
 
                 d3.select("#selectButton")
@@ -252,36 +251,6 @@
                 });
                 svg.call(tip);
 
-                let mouseOver = function(d) {
-
-                    d3.selectAll(".nodes")
-                        .transition()
-                        .duration(200)
-                        .style("opacity", .4)
-
-                    d3.select(this)
-                        .transition()
-                        .duration(200)
-                        .style("opacity", 1)
-                        .style("stroke", "black")
-                        .attr("stroke-width", 3);
-                }
-
-                let mouseLeave = function(d) {
-
-                    d3.selectAll(".nodes")
-                        .transition()
-                        .duration(200).style("stroke", "black")
-                        .style("opacity", 1.0)
-                        .attr("stroke-width", 0);
-
-                    d3.select(this)
-                        .transition()
-                        .duration(200)
-                        .style("stroke", "black")
-                        .style("opacity", 1.0)
-                        .attr("stroke-width", 0);
-                }
 
                 // build the arrow.
                 svg.append("svg:defs").selectAll("marker")
@@ -315,22 +284,66 @@
                     .data(data[1])
                     .enter()
                     .append("g")
+                    .attr("class", function(d) {
+                        return "nodes";
+                    })
+                    .on("mouseover", function(event, d) {
+                        var selectedNode = document.getElementById(d.id);
+                        tip.show(event, d);
+
+                        d3.selectAll(".nodes")
+                            .transition()
+                            .duration(200)
+                            .style("opacity", .6)
+
+                        d3.select(selectedNode)
+                            .transition()
+                            .duration(200)
+                            .style("stroke", "black")
+                            .attr("font-size", "24px")
+                            .style("opacity", 1.0)
+
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .style("stroke", "black")
+                            .style("opacity", 1.0)
+                            .attr("stroke-width", 3);
+
+
+                    })
+                    .on("mouseleave", function(event, d) {
+                        var selectedNode = document.getElementById(d.id);
+                        tip.hide(event, d)
+
+                        d3.selectAll(".nodes")
+                            .transition()
+                            .duration(200)
+                            .style("stroke", "black")
+                            .style("opacity", 1.0)
+                            .attr("stroke-width", 0);
+
+
+                        d3.select(selectedNode)
+                            .transition()
+                            .duration(200)
+                            .style("stroke", "black")
+                            .attr("font-size", "18px")
+                            .style("opacity", 1.0)
+
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .style("stroke", "black")
+                            .style("opacity", 1.0)
+                            .attr("stroke-width", 0);
+
+                    });
 
                 var circles = node.append("circle")
                     .attr("r", 20)
                     .style("fill", d => colorScaleGender(d.gender))
-                    .attr("class", function(d) {
-                        return "nodes"
-                    })
-                    .on("mouseover", function(event, d) {
-                        tip.show(event, d);
-                        mouseOver.call(this);
-                    })
-                    .on("mouseleave", function(event, d) {
 
-                        mouseLeave.call(this);
-                        tip.hide(event, d)
-                    });;
 
                 // Create a drag handler and append it to the node object instead
                 var drag_handler = d3.drag()
@@ -340,12 +353,11 @@
 
                 drag_handler(node);
 
-
                 var labels = node.append('text')
                     .attr('text-anchor', 'middle')
                     .attr('dominant-baseline', 'central')
                     .attr('font-family', 'FontAwesome')
-                    .attr('font-size', '20px')
+                    .attr('font-size', '18px')
                     .style("stroke", "black")
                     .style("stroke-width", "0")
                     .style("opacity", 1.0)
@@ -355,6 +367,8 @@
                         } else {
                             return "\uf183"
                         }
+                    }).attr("id", function(d) {
+                        return d.id;
                     })
 
                 var simulation = d3.forceSimulation();
