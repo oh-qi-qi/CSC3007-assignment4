@@ -25,6 +25,7 @@
     <!-- Load d3.js -->
     <script src="https://d3js.org/d3.v6.js"></script>
     <script src="https://unpkg.com/d3-v6-tip@1.0.6/build/d3-v6-tip.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.13.0/d3-legend.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bumbeishvili/d3-tip-for-v6@4/d3-tip.min.css">
 
@@ -196,12 +197,12 @@
 
             var margin = {
                     top: 0,
-                    right: 0,
+                    right: 150,
                     bottom: 0,
                     left: 0
                 },
-                width = 800
-            height = 400;
+                width = 900,
+                height = 350;
 
             let svg = d3.select("#my_dataviz")
                 .append("svg")
@@ -250,6 +251,21 @@
                 });
                 svg.call(tip);
 
+                var legend_x = width - margin.right
+                var legend_y = 15
+
+
+                svg.append("g")
+                    .attr("class", "legend")
+                    .attr("transform", "translate(" + legend_x + "," + legend_y + ")");
+
+                var legend = d3.legendColor()
+                    .labels(["Male", "Female"])
+                    .title("Gender")
+                    .scale(colorScaleGender)
+
+                svg.select(".legend")
+                    .call(legend);
 
                 // build the arrow.
                 svg.append("svg:defs").selectAll("marker")
@@ -381,7 +397,7 @@
                     )
                     .force("charge", d3.forceManyBody().strength(-100))
                     .force("center", d3.forceCenter(width / 2, height / 2))
-                    .force("collide", d3.forceCollide().strength(0.3).radius(40))
+                    .force("collide", d3.forceCollide().strength(0.35).radius(40))
                     .on("tick", d => {
                         node
                             .attr("transform", function(d) {
@@ -418,7 +434,7 @@
                 }
 
                 // A function that update the chart
-                function update(propertyType) {
+                function update(propertyType, legend) {
 
                     // check property type
                     console.log(propertyType)
@@ -432,12 +448,37 @@
                                 return "\uf183"
                             }
                         })
+
+                        var legend = d3.select('.legend')
+                            .selectAll('.cell')
+                            .remove();
+
+                        legend = d3.legendColor()
+                            .labels(["Male", "Female"])
+                            .title("Gender")
+                            .scale(colorScaleGender)
+
+                        svg.select(".legend")
+                            .call(legend);
+
                     } else if (propertyType == "Vaccinated") {
                         circles.style("fill", d => colorScaleVaccinated(d.vaccinated))
                         labels.text(function(d) {
                             return "\uf48e"
 
                         })
+
+                        var legend = d3.select('.legend')
+                            .selectAll('.cell')
+                            .remove();
+
+                        legend = d3.legendColor()
+                            .labels(["Yes (2 doses)", "Partial (1 dose)", "No"])
+                            .title("Vaccination Status")
+                            .scale(colorScaleVaccinated)
+
+                        svg.select(".legend")
+                            .call(legend);
                     }
 
                 }
